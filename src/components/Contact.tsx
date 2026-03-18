@@ -8,12 +8,17 @@ import emailjs from "@emailjs/browser";
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.message.trim()) {
       toast.error("Preencha pelo menos nome e mensagem.");
+      return;
+    }
+    if (!acceptedTerms) {
+      toast.error("Você precisa aceitar os termos para enviar a mensagem.");
       return;
     }
     setSending(true);
@@ -43,6 +48,7 @@ const Contact = () => {
       
       toast.success("Mensagem enviada com sucesso! Entraremos em contato.");
       setForm({ name: "", phone: "", email: "", message: "" });
+      setAcceptedTerms(false);
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
       toast.error("Erro ao enviar mensagem. Tente novamente.");
@@ -150,10 +156,31 @@ const Contact = () => {
             className="w-full bg-secondary border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground focus:border-primary outline-none transition-colors resize-none"
             maxLength={1000}
           />
+          
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 accent-primary cursor-pointer"
+            />
+            <span className="text-sm text-muted-foreground">
+              Concordo com a coleta e uso dos meus dados para fins de contato, conforme a{" "}
+              <a 
+                href="/politica-de-privacidade" 
+                target="_blank" 
+                className="text-primary hover:underline"
+              >
+                Política de Privacidade
+              </a>
+              . Seus dados não serão compartilhados com terceiros.
+            </span>
+          </label>
+
           <button
             type="submit"
-            disabled={sending}
-            className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-brand-700 transition-all disabled:opacity-60"
+            disabled={sending || !acceptedTerms}
+            className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-brand-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {sending ? "Enviando..." : "Enviar Mensagem"}
           </button>
