@@ -11,10 +11,41 @@ const Contact = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [sending, setSending] = useState(false);
 
+  // Máscara para telefone: (99) 99999-9999
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 2) {
+      return numbers.length ? `(${numbers}` : "";
+    }
+    if (numbers.length <= 7) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    }
+    if (numbers.length <= 11) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    }
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  // Validação de e-mail
+  const isValidEmail = (email: string) => {
+    if (!email) return true; // E-mail é opcional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    setForm({ ...form, phone: formatted });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.message.trim()) {
       toast.error("Preencha pelo menos nome e mensagem.");
+      return;
+    }
+    if (form.email && !isValidEmail(form.email)) {
+      toast.error("Por favor, insira um e-mail válido.");
       return;
     }
     if (!acceptedTerms) {
@@ -38,6 +69,7 @@ const Contact = () => {
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
         {
+          name: form.name.trim(),
           from_name: form.name.trim(),
           phone: form.phone.trim() || "Não informado",
           email: form.email.trim() || "Não informado",
@@ -120,7 +152,7 @@ const Contact = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-background p-8 rounded-2xl border border-border space-y-4"
+          className="bg-background p-8 rounded-2xl border border-border space-y-5"
         >
           <input
             type="text"
@@ -133,20 +165,31 @@ const Contact = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               type="tel"
-              placeholder="Telefone"
+              placeholder="(00) 00000-0000"
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              onChange={handlePhoneChange}
               className="bg-secondary border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground focus:border-primary outline-none transition-colors"
-              maxLength={20}
+              maxLength={15}
             />
-            <input
-              type="email"
-              placeholder="E-mail"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="bg-secondary border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground focus:border-primary outline-none transition-colors"
-              maxLength={255}
-            />
+            <div className="relative">
+              <input
+                type="email"
+                placeholder="E-mail"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className={`w-full bg-secondary border rounded-lg p-4 text-foreground placeholder:text-muted-foreground outline-none transition-colors ${
+                  form.email && !isValidEmail(form.email) 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-border focus:border-primary"
+                }`}
+                maxLength={255}
+              />
+              {form.email && !isValidEmail(form.email) && (
+                <span className="text-red-500 text-xs mt-1 absolute -bottom-5 left-0">
+                  E-mail inválido
+                </span>
+              )}
+            </div>
           </div>
           <textarea
             rows={4}
