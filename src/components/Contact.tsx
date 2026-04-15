@@ -10,32 +10,34 @@ const Contact = () => {
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [sending, setSending] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   // Máscara para telefone: (99) 99999-9999
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 2) {
-      return numbers.length ? `(${numbers}` : "";
-    }
-    if (numbers.length <= 7) {
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    }
-    if (numbers.length <= 11) {
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
-    }
+    if (numbers.length <= 2) return `(${numbers}`;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
-
-  // Validação de e-mail
-  const isValidEmail = (email: string) => {
-    if (!email) return true; // E-mail é opcional
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value);
-    setForm({ ...form, phone: formatted });
+    setForm((prev) => ({ ...prev, phone: formatted }));
+  };
+
+  // Validação de e-mail
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, email: value }));
+    if (value && !isValidEmail(value)) {
+      setEmailError("E-mail inválido");
+    } else {
+      setEmailError("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,12 +55,16 @@ const Contact = () => {
       return;
     }
     setSending(true);
-    
+
+    // Limpa a máscara do telefone para armazenamento/integração
+    const rawPhone = form.phone.replace(/\D/g, "");
+
     try {
-      // Salvar no Firebase
+      // Salvar no Firebase (telefone sem máscara + formatado)
       await addDoc(collection(db, "contacts"), {
         name: form.name.trim(),
-        phone: form.phone.trim(),
+        phone: rawPhone,
+        phone_formatted: form.phone.trim(),
         email: form.email.trim(),
         message: form.message.trim(),
         createdAt: serverTimestamp(),
@@ -71,16 +77,18 @@ const Contact = () => {
         {
           name: form.name.trim(),
           from_name: form.name.trim(),
-          phone: form.phone.trim() || "Não informado",
+          phone: rawPhone || "Não informado",
+          phone_formatted: form.phone.trim() || "Não informado",
           email: form.email.trim() || "Não informado",
           message: form.message.trim(),
         },
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
-      
+
       toast.success("Mensagem enviada com sucesso! Entraremos em contato.");
       setForm({ name: "", phone: "", email: "", message: "" });
       setAcceptedTerms(false);
+      setEmailError("");
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
       toast.error("Erro ao enviar mensagem. Tente novamente.");
@@ -89,42 +97,49 @@ const Contact = () => {
     }
   };
 
-  const whatsappUrl = `https://wa.me/5535999260419?text=${encodeURIComponent(
+  // usa VITE_WHATSAPP_NUMBER com fallback e garante apenas dígitos
+  const whatsappNumber = (import.meta.env.VITE_WHATSAPP_NUMBER || "5535999260419").replace(/\D/g, "");
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
     "Olá! Gostaria de solicitar um orçamento."
   )}`;
 
   return (
     <section id="contato" className="py-24 bg-card">
       <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-16">
+        {/* Informações de contato */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
+          className="space-y-8"
         >
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
-            Vamos resolver o seu problema?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-            Atendimento presencial em Pouso Alegre e suporte remoto para todo o
-            Brasil. Entre em contato agora mesmo.
-          </p>
+          <div>
+            <h2 className="text-4xl font-bold text-foreground mb-4">Entre em Contato</h2>
+            <p className="text-muted-foreground text-lg">
+              Estamos prontos para ajudar com suporte técnico, manutenção e consultoria em informática.
+            </p>
+          </div>
 
-          <div className="space-y-4 mb-8">
+          <div className="space-y-6">
+            {/* Localização */}
             <div className="flex items-center gap-4 text-foreground">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-primary" />
               </div>
-              <p>Pouso Alegre, MG — Atendimento em domicílio</p>
+              <span>Pouso Alegre, MG</span>
             </div>
+
+            {/* Telefone */}
             <div className="flex items-center gap-4 text-foreground">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                 <Phone className="w-5 h-5 text-primary" />
               </div>
-              <a href="tel:+5535999260419" className="hover:text-primary transition-colors">
+              <a href={`tel:+${whatsappNumber}`} className="hover:text-primary transition-colors">
                 (35) 99926-0419
               </a>
             </div>
+
+            {/* E-mail */}
             <div className="flex items-center gap-4 text-foreground">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                 <Mail className="w-5 h-5 text-primary" />
@@ -133,97 +148,112 @@ const Contact = () => {
                 rodrigonottoboni@gmail.com
               </a>
             </div>
-          </div>
 
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-6 py-4 bg-green-600 hover:bg-green-700 text-foreground rounded-lg font-semibold transition-all active:scale-95"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Chamar no WhatsApp
-          </a>
+            {/* WhatsApp */}
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 text-foreground hover:text-primary transition-colors"
+            >
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-green-500" />
+              </div>
+              <span>Falar pelo WhatsApp</span>
+            </a>
+          </div>
         </motion.div>
 
+        {/* Formulário */}
         <motion.form
           onSubmit={handleSubmit}
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 40 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="bg-background p-8 rounded-2xl border border-border space-y-5"
+          transition={{ duration: 0.6 }}
+          className="space-y-5"
         >
-          <input
-            type="text"
-            placeholder="Seu Nome"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full bg-secondary border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground focus:border-primary outline-none transition-colors"
-            maxLength={100}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Nome */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Nome *</label>
+            <input
+              type="text"
+              required
+              value={form.name}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder="Seu nome completo"
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {/* Telefone */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Telefone</label>
             <input
               type="tel"
-              placeholder="(00) 00000-0000"
               value={form.phone}
               onChange={handlePhoneChange}
-              className="bg-secondary border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground focus:border-primary outline-none transition-colors"
+              placeholder="(35) 99999-9999"
               maxLength={15}
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="E-mail"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className={`w-full bg-secondary border rounded-lg p-4 text-foreground placeholder:text-muted-foreground outline-none transition-colors ${
-                  form.email && !isValidEmail(form.email) 
-                    ? "border-red-500 focus:border-red-500" 
-                    : "border-border focus:border-primary"
-                }`}
-                maxLength={255}
-              />
-              {form.email && !isValidEmail(form.email) && (
-                <span className="text-red-500 text-xs mt-1 absolute -bottom-5 left-0">
-                  E-mail inválido
-                </span>
-              )}
-            </div>
           </div>
-          <textarea
-            rows={4}
-            placeholder="Como podemos ajudar?"
-            value={form.message}
-            onChange={(e) => setForm({ ...form, message: e.target.value })}
-            className="w-full bg-secondary border border-border rounded-lg p-4 text-foreground placeholder:text-muted-foreground focus:border-primary outline-none transition-colors resize-none"
-            maxLength={1000}
-          />
-          
-          <label className="flex items-start gap-3 cursor-pointer">
+
+          {/* E-mail */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">E-mail</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={handleEmailChange}
+              placeholder="seu@email.com"
+              className={`w-full px-4 py-3 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
+                emailError ? "border-red-500 focus:ring-red-500" : "border-border"
+              }`}
+            />
+            {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
+          </div>
+
+          {/* Mensagem */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Mensagem *</label>
+            <textarea
+              required
+              value={form.message}
+              onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
+              placeholder="Descreva como podemos ajudar..."
+              rows={4}
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            />
+          </div>
+
+          {/* Termos */}
+          <div className="flex items-start gap-3">
             <input
               type="checkbox"
+              id="terms"
               checked={acceptedTerms}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
               className="mt-1 w-4 h-4 accent-primary cursor-pointer"
             />
-            <span className="text-sm text-muted-foreground">
-              Concordo com a coleta e uso dos meus dados para fins de contato, conforme a{" "}
-              <a 
-                href="/politica-de-privacidade" 
-                target="_blank" 
+            <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
+              Concordo com a{" "}
+              <a
+                href="/politica-de-privacidade"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
                 Política de Privacidade
-              </a>
-              . Seus dados não serão compartilhados com terceiros.
-            </span>
-          </label>
+              </a>{" "}
+              e autorizo o uso dos meus dados para contato.
+            </label>
+          </div>
 
+          {/* Botão */}
           <button
             type="submit"
             disabled={sending || !acceptedTerms}
-            className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-brand-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 px-6 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {sending ? "Enviando..." : "Enviar Mensagem"}
           </button>

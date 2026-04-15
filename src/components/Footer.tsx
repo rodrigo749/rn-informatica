@@ -17,6 +17,9 @@ const Footer = () => {
             <p className="text-muted-foreground text-sm mt-1">
               Pouso Alegre, MG — Soluções de hardware e software.
             </p>
+            <p className="text-muted-foreground text-xs mt-1">
+              CNPJ: 26.830.223/0001-70
+            </p>
           </div>
 
           <nav className="flex items-center gap-6">
@@ -32,9 +35,12 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border text-center">
+        <div className="mt-8 pt-8 border-t border-border text-center space-y-1">
           <p className="text-muted-foreground text-sm">
             © {new Date().getFullYear()} RN Informática. Todos os direitos reservados.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            CNPJ: 26.830.223/0001-70
           </p>
         </div>
       </div>
