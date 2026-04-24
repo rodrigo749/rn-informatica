@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background rounded square -->
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  
+  <!-- Circuit decorative dots -->
+  <circle cx="10" cy="10" r="2" fill="#3b82f6" opacity="0.5"/>
+  <circle cx="54" cy="10" r="2" fill="#3b82f6" opacity="0.5"/>
+  <circle cx="10" cy="54" r="2" fill="#3b82f6" opacity="0.5"/>
+  <circle cx="54" cy="54" r="2" fill="#3b82f6" opacity="0.5"/>
+
+  <!-- Circuit lines -->
+  <line x1="10" y1="10" x2="10" y2="18" stroke="#3b82f6" stroke-width="1" opacity="0.4"/>
+  <line x1="54" y1="10" x2="54" y2="18" stroke="#3b82f6" stroke-width="1" opacity="0.4"/>
+  <line x1="10" y1="46" x2="10" y2="54" stroke="#3b82f6" stroke-width="1" opacity="0.4"/>
+  <line x1="54" y1="46" x2="54" y2="54" stroke="#3b82f6" stroke-width="1" opacity="0.4"/>
+
+  <!-- "RN" text -->
+  <text
+    x="32"
+    y="41"
+    text-anchor="middle"
+    font-family="'Segoe UI', Arial, sans-serif"
+    font-size="26"
+    font-weight="800"
+    letter-spacing="-1"
+    fill="url(#grad)"
+  >RN</text>
+
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -23,14 +23,22 @@ const About = () => {
           </h2>
           <div className="h-1 w-20 bg-primary rounded-full mb-8" />
           <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-            Somos uma empresa especializada em soluções de informática, oferecendo
+            Somos uma empresa especializada em soluções de tecnologia, oferecendo
             atendimento rápido e confiável para residências e empresas de Pouso
             Alegre e região.
           </p>
+          <p className="text-muted-foreground text-lg leading-relaxed mb-4">
+            Atuamos com manutenção, formatação e montagem de computadores, além do
+            desenvolvimento de sites institucionais, landing pages e lojas virtuais,
+            com design moderno, responsivo e foco em resultados.
+          </p>
+          <p className="text-muted-foreground text-lg leading-relaxed mb-4">
+            Criamos soluções digitais otimizadas para desempenho, experiência do
+            usuário (UI/UX) e visibilidade no Google (SEO), ajudando nossos clientes
+            a fortalecer sua presença online e aumentar suas oportunidades de negócio.
+          </p>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Nosso compromisso é entregar qualidade e satisfação em cada serviço,
-            seja uma simples formatação ou a montagem de uma workstation de alta
-            performance.
+            Nosso compromisso é entregar qualidade, eficiência e tecnologia que gera resultados.
           </p>
         </motion.div>
 

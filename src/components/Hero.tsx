@@ -43,6 +43,12 @@ const Hero = () => {
               Fale Conosco
             </a>
             <a
+              href="#websites"
+              className="w-full sm:w-auto px-8 py-4 bg-secondary border border-primary/40 text-foreground rounded-lg font-semibold hover:bg-muted transition-all"
+            >
+              🌐 Sites & Landing Pages
+            </a>
+            <a
               href="#servicos"
               className="w-full sm:w-auto px-8 py-4 bg-secondary border border-border text-foreground rounded-lg font-semibold hover:bg-muted transition-all"
             >

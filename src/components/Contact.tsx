@@ -8,7 +8,6 @@ import emailjs from "@emailjs/browser";
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [sending, setSending] = useState(false);
   const [emailError, setEmailError] = useState("");
 
@@ -50,10 +49,6 @@ const Contact = () => {
       toast.error("Por favor, insira um e-mail válido.");
       return;
     }
-    if (!acceptedTerms) {
-      toast.error("Você precisa aceitar os termos para enviar a mensagem.");
-      return;
-    }
     setSending(true);
 
     // Limpa a máscara do telefone para armazenamento/integração
@@ -87,7 +82,6 @@ const Contact = () => {
 
       toast.success("Mensagem enviada com sucesso! Entraremos em contato.");
       setForm({ name: "", phone: "", email: "", message: "" });
-      setAcceptedTerms(false);
       setEmailError("");
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
@@ -226,33 +220,24 @@ const Contact = () => {
             />
           </div>
 
-          {/* Termos */}
-          <div className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              id="terms"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-1 w-4 h-4 accent-primary cursor-pointer"
-            />
-            <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
-              Concordo com a{" "}
-              <a
-                href="/politica-de-privacidade"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Política de Privacidade
-              </a>{" "}
-              e autorizo o uso dos meus dados para contato.
-            </label>
+          {/* Aviso de privacidade */}
+          <div className="text-xs text-muted-foreground mb-4">
+            Ao enviar, você concorda com a{" "}
+            <a
+              href="/politica-de-privacidade"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Política de Privacidade
+            </a>{" "}
+            e autoriza o uso dos seus dados para contato.
           </div>
 
           {/* Botão */}
           <button
             type="submit"
-            disabled={sending || !acceptedTerms}
+            disabled={sending}
             className="w-full py-3 px-6 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {sending ? "Enviando..." : "Enviar Mensagem"}
